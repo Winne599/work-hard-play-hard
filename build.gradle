@@ -1,0 +1,66 @@
+// gradle 自身需求资源库 放头部
+buildscript {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public' }// 加载其他Maven仓库
+        mavenCentral()
+    }
+    dependencies {
+        classpath('org.springframework.boot:spring-boot-gradle-plugin:2.1.1.RELEASE')// 加载插件，用到里面的函数方法
+    }
+}
+
+// 插件
+//plugins {
+//    id 'java'
+//}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+// 使用spring boot 框架
+apply plugin: 'org.springframework.boot'
+// 使用spring boot的自动依赖管理
+apply plugin: 'io.spring.dependency-management'
+
+// 版本信息
+group 'michael.spica.gradle'
+version '1.0-SNAPSHOT'
+
+// 执行项目中所使用的的资源仓库
+repositories {
+    maven { url 'https://maven.aliyun.com/repository/public' }
+    mavenCentral()
+}
+
+// 项目中需要的依赖
+dependencies {
+    // 添加 jupiter 测试的依赖
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    // 添加 jupiter 测试的依赖
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+
+    // 添加 spring-boot-starter-web 的依赖 必须 排除了security 根据自身需求
+    implementation('org.springframework.boot:spring-boot-starter-web') {
+        exclude group: 'org.springframework.security', module: 'spring-security-config'
+    }
+
+    // 添加 spring-boot-starter-test 该依赖对于编译测试是必须的，默认包含编译产品依赖和编译时依赖
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // 添加 junit 测试的依赖
+    testImplementation group: 'junit', name: 'junit', version: '4.11'
+    // 添加 lombok
+    annotationProcessor 'org.projectlombok:lombok:1.18.22' // annotationProcessor代表main下代码的注解执行器
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'// testAnnotationProcessor代表test下代码的注解执行器
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.22' // compile代表编译时使用的lombok
+
+    implementation 'com.alibaba:fastjson:1.2.68'
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.1'
+}
+
+// 第二种排除依赖方法
+//configurations {
+//    compile.exclude group:"org.codehaus.jackson", module:"jackson-mapper-asl" // 排除依赖
+//}
+
+test {
+    useJUnitPlatform()
+}
