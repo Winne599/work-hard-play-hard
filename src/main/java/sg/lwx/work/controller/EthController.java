@@ -12,6 +12,7 @@ import sg.lwx.work.service.EthService;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
 
 @RestController
 public class EthController {
@@ -29,11 +30,13 @@ public class EthController {
     }
 
 
-
-
     @PostMapping("/cold-wallet/tx/info/get")
     public ResponseEntity<?> getColdWalletTxInfo(@RequestBody GetColdWalletTxInfoReqeust request) throws IOException {
-        JSONObject result = ethService.getColdWalletTxInfo();
+
+
+        String walletAddress = request.getWalletAddress();
+         List<String> contractAddressList = request.getContractAddressList();
+        JSONObject result = ethService.getColdWalletTxInfo(walletAddress,contractAddressList);
         return ResponseEntity.ok().body(result);
     }
 

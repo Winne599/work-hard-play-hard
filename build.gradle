@@ -79,6 +79,8 @@ dependencies {
     // xxl-job
     implementation group: 'com.xuxueli', name: 'xxl-job-core', version: '2.3.1'
 
+    // mybatis
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.0.1'
 
 
 

@@ -4,7 +4,7 @@
     <property name="logback.appname" value="ctx-mpc-service" />
 
 
-    <contextName>ctx-mpc-service</contextName>
+    <contextName>work-service</contextName>
     <!--输出到控制台 ConsoleAppender-->
     <appender name="consoleInfoLog" class="ch.qos.logback.core.ConsoleAppender">
         <!--展示格式 layout-->
