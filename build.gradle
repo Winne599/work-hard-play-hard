@@ -76,6 +76,10 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
 
 
+    // xxl-job
+    implementation group: 'com.xuxueli', name: 'xxl-job-core', version: '2.3.1'
+
+
 
 
 }

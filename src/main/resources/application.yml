@@ -7,13 +7,9 @@ spring:
   application:
     name: WorkService
   datasource:
-    #    url: jdbc:mariadb://192.168.100.12:3306/mpc_service_q?useFractionalSeconds=true&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true
-    #    url: jdbc:mariadb://stg1-maria-db.c5vumjc8772o.ap-southeast-1.rds.amazonaws.com/mpc_service?useFractionalSeconds=true&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true
-    #    username: admin
-    #    password: password
-    url: jdbc:mariadb://stg1-maria-db.c5vumjc8772o.ap-southeast-1.rds.amazonaws.com:3306/mpc_service?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
-    username: appadmin
-    password: kYEXK0iFG6I25FMG
+    url: jdbc:mariadb://127.0.0.1:3306/work_hard_play_hard?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
+    username: root
+    password: root
     driver: org.mariadb.jdbc.Driver
   redis:
     database: 15
@@ -73,25 +69,44 @@ logging:
     # sg.ctx.mpc.repository.**: debug
   config: classpath:logging-config.xml
 
-ctx:
-  mpc:
-    proxy:
-      node-a:
-        url: http://127.0.0.1:9091
-      node-b:
-        url: http://127.0.0.1:9091
-      node-c:
-        url: http://127.0.0.1:9091
-      node-d:
-        url: http://127.0.0.1:9091
-      node-e:
-        url: http://127.0.0.1:9091
-    groups:
-      - id: 1
-        nodes: 3
-    system:
-      public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm5W2L+Az7FL43+f8Vrksx8NJZb71IqeY47UNqB93kULZ/GgnL3rG0We6CDtUhJpSAcriPL51lxOnQnk4+scyV3lxS5wL4FbbfhOjFggDkyFQBguJ8JzC1M+hrdtLVfYHgFeZd2GImFSX4vlwsE9KDWR55WpY5uWSx8RZjNFVP1zFklbRUkzOgzuMSndXQ8IOZ1e3Wfv9A7h9CEsARhUipN12aQjYhciiAT/k2u8mRdxN3dIjD0lrrEk8UQWQw4ENQWSgMZLDkyAGmCLIxtPYmQRFvRuMSYF2DSmLMSnUTVv0dyqsA0NeMvLDhi28uNbcFfSThIHTIcDV7UhaNTUSMQIDAQAB
-    service:
-      etherscan-url: https://goerli.etherscan.io
-      gas-price-times: 1
-      btcscan-url: https://live.blockcypher.com/btc-testnet/
+xxl:
+  job:
+    accessToken: default_token
+    admin:
+      addresses: http://localhost:9000/xxl-job-admin
+    executor:
+      address: ''
+      appname: worl-service
+      ip: ''
+      logpath: /data/applogs/xxl-job/jobhandler
+      logretentiondays: 30
+      port: 9201
+
+
+
+
+
+
+#ctx:
+#  mpc:
+#    proxy:
+#      node-a:
+#        url: http://127.0.0.1:9091
+#      node-b:
+#        url: http://127.0.0.1:9091
+#      node-c:
+#        url: http://127.0.0.1:9091
+#      node-d:
+#        url: http://127.0.0.1:9091
+#      node-e:
+#        url: http://127.0.0.1:9091
+#    groups:
+#      - id: 1
+#        nodes: 3
+#    system:
+#      public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm5W2L+Az7FL43+f8Vrksx8NJZb71IqeY47UNqB93kULZ/GgnL3rG0We6CDtUhJpSAcriPL51lxOnQnk4+scyV3lxS5wL4FbbfhOjFggDkyFQBguJ8JzC1M+hrdtLVfYHgFeZd2GImFSX4vlwsE9KDWR55WpY5uWSx8RZjNFVP1zFklbRUkzOgzuMSndXQ8IOZ1e3Wfv9A7h9CEsARhUipN12aQjYhciiAT/k2u8mRdxN3dIjD0lrrEk8UQWQw4ENQWSgMZLDkyAGmCLIxtPYmQRFvRuMSYF2DSmLMSnUTVv0dyqsA0NeMvLDhi28uNbcFfSThIHTIcDV7UhaNTUSMQIDAQAB
+#    service:
+#      etherscan-url: https://goerli.etherscan.io
+#      gas-price-times: 1
+#      btcscan-url: https://live.blockcypher.com/btc-testnet/
+

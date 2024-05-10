@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import sg.lwx.work.model.request.GetColdWalletTxInfoReqeust;
 import sg.lwx.work.service.EthService;
 
 import java.io.IOException;
@@ -24,6 +25,15 @@ public class EthController {
         String toAddress = request.getString("toAddress");
         BigInteger value = request.getBigInteger("value");
         JSONObject result = ethService.testEthTransferOnArbitrum(fromAddress, toAddress, value, null);
+        return ResponseEntity.ok().body(result);
+    }
+
+
+
+
+    @PostMapping("/cold-wallet/tx/info/get")
+    public ResponseEntity<?> getColdWalletTxInfo(@RequestBody GetColdWalletTxInfoReqeust request) throws IOException {
+        JSONObject result = ethService.getColdWalletTxInfo();
         return ResponseEntity.ok().body(result);
     }
 
