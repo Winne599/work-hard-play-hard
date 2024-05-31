@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="sg.lwx.work.mapper.TransferRecordMapper">
+
+    <resultMap id="BaseResultMap" type="sg.lwx.work.domain.TransferRecord">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="from" property="from" jdbcType="VARCHAR"/>
+        <result column="to" property="to" jdbcType="VARCHAR"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="nonce" property="nonce" jdbcType="BIGINT"/>
+        <result column="contract_address" property="contractAddress" jdbcType="VARCHAR"/>
+        <result column="gas_limit" property="gasLimit" jdbcType="BIGINT"/>
+        <result column="max_fee_per_gas" property="maxFeePerGas" jdbcType="BIGINT"/>
+        <result column="max_priority_fee_per_gas" property="maxPriorityFeePerGas" jdbcType="BIGINT"/>
+
+        <result column="transaction_hash" property="transactionHash" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        `id`, `from`, `to`, `amount`, `nonce`, `contract_address`, `gas_limit`, `max_fee_per_gas`,
+        `max_priority_fee_per_gas`, `transaction_hash`, `create_time`, `update_time`
+    </sql>
+
+    <insert id="insert" parameterType="sg.lwx.work.domain.Transaction" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `transfer_record` (`id`, `from`, `to`, `amount`, `nonce`, `contract_address`, `gas_limit`, `max_fee_per_gas`, `max_priority_fee_per_gas`, `transaction_hash`, `create_time`, `update_time`)
+        VALUES (
+        #{id,jdbcType=INTEGER},#{from,jdbcType=VARCHAR}, #{to,jdbcType=VARCHAR},
+        #{amount,jdbcType=DECIMAL},
+        #{nonce,jdbcType=INTEGER}, #{contractAddress,jdbcType=VARCHAR}, #{gasLimit,jdbcType=BIGINT},
+        #{maxFeePerGas,jdbcType=BIGINT},
+        #{maxPriorityFeePerGas,jdbcType=BIGINT}, #{transactionHash,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
+        )
+    </insert>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+        select
+        <include refid="Base_Column_List" />
+        from transfer_record
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <update id="updateHashByPrimaryKey" parameterType="sg.lwx.work.domain.TransferRecord" >
+        update transfer_record
+        set transaction_hash = #{transactionHash,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <select id="selectByTransactionHash" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select
+        <include refid="Base_Column_List" />
+        from transfer_record
+        where transaction_hash = #{transactionHash,jdbcType=VARCHAR}
+    </select>
+
+
+
+</mapper>
