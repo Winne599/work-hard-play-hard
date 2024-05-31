@@ -2,6 +2,7 @@ package sg.lwx.work.service.Impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,17 +22,15 @@ import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Numeric;
-import sg.lwx.work.domain.CurrentBlockNo;
-import sg.lwx.work.domain.GetColdWalletTxInfo;
+import sg.lwx.work.domain.*;
+import sg.lwx.work.mapper.ContractInfoMapper;
 import sg.lwx.work.mapper.CurrentBlockNoMapper;
+import sg.lwx.work.mapper.TransactionMapper;
 import sg.lwx.work.service.EthService;
-import sg.lwx.work.util.TestL2Network;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -49,6 +48,11 @@ public class EthServiceImpl implements EthService {
 
     @Autowired
     private CurrentBlockNoMapper currentBlockNoMapper;
+    @Autowired
+    private TransactionMapper transactionMapper;
+    @Autowired
+    private ContractInfoMapper contractInfoMapper;
+
 
     @Override
     public JSONObject testEthTransferOnArbitrum(String fromAddress, String toAddress, BigInteger value, BigInteger maxFeePerGas) throws IOException {
@@ -96,25 +100,7 @@ public class EthServiceImpl implements EthService {
 
     @Override
     public JSONObject getColdWalletTxInfo(String walletAddress, List<String> contractAddressList) throws IOException {
-
         JSONObject result = new JSONObject();
-
-//        var secondsPerDay = 60 * 60 * 24;
-//        System.out.println("secondsPerDay= " + secondsPerDay);
-//        var ethBlock = 13;
-//        var blockNumberPerDay = secondsPerDay / ethBlock;
-//        System.out.println("blockNumberPerDay= " + blockNumberPerDay);
-//        var blockNumberPerMonth = blockNumberPerDay * 1; // 1 天
-
-
-        // 定义返回结构
-        List<GetColdWalletTxInfo> infoList = new ArrayList<>();
-
-
-        // 获取区块最新高度
-        // 监控 【blockNumberPerMonth,最新区块高度】 的链上内容
-        // 监控内容：ETH，合约（想监控的币种）
-        // 可以生成一个json，然后遍历这个json，计算一下这个月入账多少，转出多少
 
         web3j = Web3j.build(new HttpService(mainAlchemyUrl));
 
@@ -122,7 +108,6 @@ public class EthServiceImpl implements EthService {
         CurrentBlockNo tokenBlockNo = currentBlockNoMapper.selectByType(ERC_20_TOKEN_TYPE);
         var fromBlockNo = tokenBlockNo.getBlockNo();
 
-        //    toBlockNo.subtract(BigInteger.valueOf(0)); // todo 从数据库里取
 
         fromBlockNo = new BigInteger("19838058");
         toBlockNo = new BigInteger("19838059");
@@ -162,16 +147,15 @@ public class EthServiceImpl implements EthService {
                 } else {
                     value = Numeric.decodeQuantity(data);
                 }
-
                 // 防止 0 转账攻击
                 if (BigInteger.ZERO.compareTo(value) == 0) {
                     continue;
                 }
-
                 // 如果接收者是 0 地址，则直接弃用该条日志
                 if ("0x0000000000000000000000000000000000000000000000000000000000000000".equals(topicList.get(2))) {
                     continue;
                 }
+
 
                 boolean deposit = walletAddress.equalsIgnoreCase(toAddress.toLowerCase());
                 boolean withdraw = walletAddress.equalsIgnoreCase(fromAddress.toLowerCase());
@@ -190,66 +174,83 @@ public class EthServiceImpl implements EthService {
                     continue;
                 }
 
+                org.web3j.protocol.core.methods.response.Transaction transactionOnChain = web3j.ethGetTransactionByHash(transactionHash).send().getResult();
+                LOGGER.info("transaction details: {}", JSON.toJSONString(transactionOnChain));
+                Transaction transactionDb = transactionMapper.selectByHash(transactionHash);
+                if (Optional.ofNullable(transactionDb).isPresent()) {
+                    // 幂等控制
+                    continue;
+                }
 
+                String currencyId = null;
+                String currencyName = null;
+                Integer tokenDecimals = null;
+
+                // 根据 contract 查询信息
+                if (StringUtils.isNotEmpty(contractAddress)) {
+                  ContractInfo contractInfo = contractInfoMapper.selectByContractAddress(contractAddress);
+                  if (contractInfo != null){
+                      currencyId = contractInfo.getTokenSymbol();
+                      currencyName = contractInfo.getTokenName();
+                      tokenDecimals = contractInfo.getTokenDecimals();
+                  }
+
+
+                }
+
+
+                Transaction transaction = new Transaction();
                 if (deposit) {
-                    GetColdWalletTxInfo info = new GetColdWalletTxInfo();
-                    info.setType(2);
-                    String amountHex = receipt.getLogs().get(0).getData();
-                    BigInteger amount = new BigInteger(amountHex.substring(2), 16);
-                    info.setAmount(amount);
+                    transaction.setTransactionHash(transactionHash);
+                    transaction.setNetwork("ETH");
+                    transaction.setNonce(BigInteger.ZERO);
+                    transaction.setFromAddress(transactionOnChain.getFrom());
+                    transaction.setToAddress(transactionOnChain.getTo());
+                    transaction.setCurrencyId(currencyId);
+                    transaction.setCurrencyName(currencyName);
+                    transaction.setContractAddress(contractAddress);
+                    transaction.setBalanceDelta(new BigDecimal(value));
+                    transaction.setAmount(transaction.getBalanceDelta().movePointLeft(tokenDecimals));
+                    transaction.setGasFee(new BigDecimal(0));
+                    transaction.setCurrBlockNo(transactionOnChain.getBlockNumber());
+                    transaction.setType((TransactionTypeEnum.RECEIVE.getId()));
+                    transaction.setStatus(TransactionStatusEnum.ON_CHAIN.getId());
+                    // insert db
+                    int count = transactionMapper.insert(transaction);
+                    if (count != 1) {
+                        LOGGER.error("insert deposit transaction failed");
+                    }
 
-                    infoList.add(info);
+
+                    // 存数据库
                 }
 
                 if (withdraw) {
-                    GetColdWalletTxInfo info = new GetColdWalletTxInfo();
-                    info.setType(1);
-                    String amountHex = receipt.getLogs().get(0).getData();
-                    BigInteger amount = new BigInteger(amountHex.substring(2), 16);
-                    info.setAmount(amount);
+                    // 存数据库
+                    transaction.setTransactionHash(transactionHash);
+                    transaction.setNetwork("ETH");
+                    transaction.setNonce(transactionOnChain.getNonce());
 
-                    infoList.add(info);
+                    transaction.setFromAddress(transactionOnChain.getFrom());
+                    transaction.setToAddress(transactionOnChain.getTo());
+                    transaction.setCurrencyId(currencyId);
+                    transaction.setCurrencyName(currencyName);
+                    transaction.setContractAddress(contractAddress);
+                    transaction.setBalanceDelta(new BigDecimal(value));
+                    transaction.setAmount(transaction.getBalanceDelta().movePointLeft(tokenDecimals));
+                    transaction.setGasFee(new BigDecimal(0)); // todo
+                    transaction.setCurrBlockNo(transactionOnChain.getBlockNumber());
+                    transaction.setType((TransactionTypeEnum.SEND.getId()));
+                    transaction.setStatus(TransactionStatusEnum.ON_CHAIN.getId());
+                    // insert db
+                    int count = transactionMapper.insert(transaction);
+                    if (count != 1) {
+                        LOGGER.error("insert withdraw transaction failed");
+                    }
                 }
             }
             currentBlockNo = currentBlockNo.add(BigInteger.ONE);
         }
-
-
-        BigInteger receivedAmount = new BigInteger("0");
-        BigInteger sentAmount = new BigInteger("0");
-
-
-        if (infoList.size() > 0) {
-            for (GetColdWalletTxInfo info : infoList) {
-                if (info.getType() == 1) {
-                    sentAmount = sentAmount.add(info.getAmount());
-                }
-                if (info.getType() == 2) {
-                    receivedAmount = receivedAmount.add(info.getAmount());
-                }
-            }
-        }
-
-        LOGGER.info("sent amount: {}", sentAmount);
-        LOGGER.info("received amount: {}", receivedAmount);
-
-
-        BigDecimal receivedResult = null;
-        BigDecimal sentResult = null;
-
-
-        if (receivedAmount != null) {
-            receivedResult = new BigDecimal(receivedAmount).movePointLeft(6); // 因为usdt的精度是6
-        }
-        if (sentAmount != null) {
-            sentResult = new BigDecimal(sentAmount).movePointLeft(6); // 因为usdt的精度是6
-        }
-
-
-        result.put("receivedResult", receivedResult);
-        result.put("sentResult", sentResult);
-
-
         return result;
     }
 

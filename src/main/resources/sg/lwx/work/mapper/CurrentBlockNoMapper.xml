@@ -18,6 +18,7 @@
     <select id="selectByType" resultMap="BaseResultMap" parameterType="java.lang.String">
        select
         <include refid="Base_Column_List"></include>
+        from current_block_no
         where type = #{type}
     </select>
 

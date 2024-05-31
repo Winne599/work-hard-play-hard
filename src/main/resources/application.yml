@@ -7,7 +7,7 @@ spring:
   application:
     name: WorkService
   datasource:
-    url: jdbc:mariadb://127.0.0.1:3306/work_hard_play_hard?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://127.0.0.1:3306/work_hard_play_hard?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
     username: root
     password: root
     driver: org.mariadb.jdbc.Driver
