@@ -2,11 +2,11 @@ package sg.lwx.work.service.Impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import jnr.ffi.Struct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
@@ -14,7 +14,6 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Bool;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.generated.Uint256;
-import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.crypto.TransactionEncoder;
@@ -29,22 +28,18 @@ import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Numeric;
+import sg.lwx.work.constant.ExceptionConstant;
 import sg.lwx.work.domain.*;
-import sg.lwx.work.mapper.ContractInfoMapper;
-import sg.lwx.work.mapper.CurrentBlockNoMapper;
-import sg.lwx.work.mapper.TransactionMapper;
-import sg.lwx.work.mapper.TransferRecordMapper;
+import sg.lwx.work.domain.enums.ChainIdEnum;
+import sg.lwx.work.domain.exception.BusinessException;
+import sg.lwx.work.mapper.*;
 import sg.lwx.work.service.EthService;
-import sg.lwx.work.util.CommonConstant;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class EthServiceImpl implements EthService {
@@ -67,7 +62,15 @@ public class EthServiceImpl implements EthService {
     private ContractInfoMapper contractInfoMapper;
     @Autowired
     private TransferRecordMapper transferRecordMapper;
+    @Autowired
+    private CredentialsMapper credentialsMapper;
 
+    @Value("blockchain.network")
+    private String network;
+
+    /**
+     * 初始化 以太坊节点
+     */
     public EthServiceImpl() {
         this.web3j = Web3j.build(new HttpService(sepoliaAlchemyUrl));
     }
@@ -104,7 +107,8 @@ public class EthServiceImpl implements EthService {
         );
         LOGGER.info("sendTransaction transferEth ===> chainId: {}, nonce: {}, gasLimit: {}, value: {}, maxPriorityFeePerGas: {}, maxFeePerGas: {}", chainId, nonce, gasLimit, value, maxPriorityFeePerGas, maxFeePerGas);
 
-        Credentials credentials = this.getCredentials();
+
+        org.web3j.crypto.Credentials credentials = this.getCredentials(fromAddress);
         byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
         String signedMessageHex = Numeric.toHexString(signedMessage);
 
@@ -273,7 +277,7 @@ public class EthServiceImpl implements EthService {
     }
 
     @Override
-    public JSONObject transferERC20(String from, String to, BigDecimal amount, String contractAddress, BigInteger gasLimit, BigInteger maxFeePerGas, BigInteger maxPriorityFeePerGas) throws IOException {
+    public JSONObject transferERC20(String from, String to, BigDecimal amount, String contractAddress, BigInteger gasLimit, BigInteger maxFeePerGas, BigInteger maxPriorityFeePerGas) throws IOException, BusinessException {
         LOGGER.info("===========transferERC20===========contractAddress: {}, fromAddress: {}, toAddress: {}, amount: {}", contractAddress, from, to, amount);
 
         TransferRecord record = new TransferRecord();
@@ -285,8 +289,12 @@ public class EthServiceImpl implements EthService {
         record.setMaxFeePerGas(maxFeePerGas);
         record.setMaxPriorityFeePerGas(maxPriorityFeePerGas);
 
-
-        BigInteger amountGwei = amount.movePointRight(6).toBigInteger(); // todo 6是USDT精度，精度从库里或者枚举里取
+        ContractInfo contractInfo = contractInfoMapper.selectByContractAddress(contractAddress);
+        if (!Optional.ofNullable(contractInfo).isPresent()) {
+            throw new BusinessException(ExceptionConstant.CONTRACT_IS_NOT_FOUND);
+        }
+        Integer decimals = contractInfo.getTokenDecimals();
+        BigInteger amountGwei = amount.movePointRight(decimals).toBigInteger();
         Function function = new Function(
                 "transfer",
                 Arrays.asList(new Address(to),
@@ -297,12 +305,9 @@ public class EthServiceImpl implements EthService {
 
         // PENDING、 LATEST
         BigInteger nonce = getNonce(from, DefaultBlockParameterName.PENDING);
-
         long chainId = this.getEthereumChainId();
         String data = FunctionEncoder.encode(function);
         BigInteger value = BigInteger.ZERO;
-        // maxPriorityFeePerGas = BigInteger.valueOf(2000000000L);
-
 
         record.setNonce(nonce);
         record.setCreateTime(LocalDateTime.now());
@@ -330,7 +335,7 @@ public class EthServiceImpl implements EthService {
         );
         LOGGER.info("sendTransaction rawTransaction ===> chainId: {}, nonce: {}, gasLimit: {}, contractAddress: {}, value: {}, data: {}, maxPriorityFeePerGas: {}, maxFeePerGas: {}", chainId, nonce, gasLimit, contractAddress, value, data, maxPriorityFeePerGas, maxFeePerGas);
 
-        Credentials credentials = getCredentials(); // todo
+        org.web3j.crypto.Credentials credentials = this.getCredentials(from);
         byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
         String signedMessageHex = Numeric.toHexString(signedMessage);
 
@@ -346,12 +351,11 @@ public class EthServiceImpl implements EthService {
             transferRecordMapper.updateHashByPrimaryKey(record);
         }
 
-
         return response;
     }
 
     @Override
-    public JSONObject speedupERC20Transfer(String transactionHash, BigInteger maxFeePerGas, BigInteger maxPriorityFeePerGas, Integer id) throws IOException {
+    public JSONObject speedupERC20Transfer(String transactionHash, BigInteger maxFeePerGas, BigInteger maxPriorityFeePerGas, Integer id) throws IOException, BusinessException {
         //   boolean feeCheckFlag = feeCheck();
         TransferRecord record = new TransferRecord();
         if (StringUtils.isNotEmpty(transactionHash)) {
@@ -359,7 +363,6 @@ public class EthServiceImpl implements EthService {
         } else {
             record = transferRecordMapper.selectByPrimaryKey(id);
         }
-
 
         if (!Optional.ofNullable(record).isPresent()) {
             LOGGER.error("speedupERC20Transfer transaction record not found");
@@ -371,8 +374,15 @@ public class EthServiceImpl implements EthService {
         String contractAddress = record.getContractAddress();
         BigInteger gasLimit = record.getGasLimit();
         BigInteger nonce = record.getNonce();
+        String from = record.getFrom();
 
-        BigInteger amountGwei = amount.movePointRight(6).toBigInteger(); // todo 6是USDT精度，精度从库里或者枚举里取
+        ContractInfo contractInfo = contractInfoMapper.selectByContractAddress(contractAddress);
+        if (!Optional.ofNullable(contractInfo).isPresent()) {
+            throw new BusinessException(ExceptionConstant.CONTRACT_IS_NOT_FOUND);
+        }
+
+        Integer decimals = contractInfo.getTokenDecimals();
+        BigInteger amountGwei = amount.movePointRight(decimals).toBigInteger();
         Function function = new Function(
                 "transfer",
                 Arrays.asList(new Address(to),
@@ -398,7 +408,7 @@ public class EthServiceImpl implements EthService {
         );
         LOGGER.info("sendTransaction rawTransaction ===> chainId: {}, nonce: {}, gasLimit: {}, contractAddress: {}, value: {}, data: {}, maxPriorityFeePerGas: {}, maxFeePerGas: {}", chainId, nonce, gasLimit, contractAddress, value, data, maxPriorityFeePerGas, maxFeePerGas);
 
-        Credentials credentials = getCredentials(); // todo
+        org.web3j.crypto.Credentials credentials = getCredentials(from);
         byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
         String signedMessageHex = Numeric.toHexString(signedMessage);
 
@@ -407,16 +417,17 @@ public class EthServiceImpl implements EthService {
         // {"id":1,"jsonrpc":"2.0","result":"0x3b3c3ce077c59c0b7ba86cae2c6ea8c5710e596d93f319f0ca66f82a54aca50f","transactionHash":"0x3b3c3ce077c59c0b7ba86cae2c6ea8c5710e596d93f319f0ca66f82a54aca50f"}
         JSONObject response = (JSONObject) JSON.toJSON(rawResponse);
 
-
         return response;
     }
 
 
+    @Override
     public TransactionReceipt getTransactionReceipt(String transactionHash) throws IOException {
         EthGetTransactionReceipt transactionReceipt = web3j.ethGetTransactionReceipt(transactionHash).send();
         Optional<TransactionReceipt> optional = transactionReceipt.getTransactionReceipt();
         if (optional.isPresent()) {
             TransactionReceipt receipt = optional.get();
+            LOGGER.info("transaction hash: {}, transaction receipt: {}", transactionHash, JSON.toJSONString(receipt));
             return receipt;
         } else {
             return null;
@@ -434,16 +445,27 @@ public class EthServiceImpl implements EthService {
     }
 
 
-    private Credentials getCredentials() {
-        // 0xF3b2e8eb0A56cBa18faB91E762a67ECB15198eb9
-        BigInteger privateKeyValue = new BigInteger("563fb23f8356e5eb4b21dad25dbda3c1e25827d241d503668b0f2c6806a01587", 16);
-        ECKeyPair ecKeyPair = ECKeyPair.create(privateKeyValue);
-        Credentials credential = Credentials.create(ecKeyPair);
-        return credential;
+    /**
+     * 查库，通过地址找私钥
+     *
+     * @param address
+     * @return
+     */
+    private org.web3j.crypto.Credentials getCredentials(String address) {
+        sg.lwx.work.domain.Credentials credentials = credentialsMapper.selectPrivateKeyByAddress(address);
+        if (Optional.ofNullable(credentials).isPresent()) {
+            BigInteger privateKeyValue = new BigInteger(credentials.getPrivateKey(), 16);
+            ECKeyPair ecKeyPair = ECKeyPair.create(privateKeyValue);
+            org.web3j.crypto.Credentials credential = org.web3j.crypto.Credentials.create(ecKeyPair);
+            return credential;
+        }
+        return null;
     }
+
 
     // 获取以太坊的 chainId
     private long getEthereumChainId() {
-        return 11155111L; // todo 优化
+        Long chainId = ChainIdEnum.getChainIdByNetwork(network.toLowerCase(Locale.ROOT));
+        return chainId;
     }
 }

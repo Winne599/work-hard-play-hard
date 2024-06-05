@@ -1,0 +1,77 @@
+{
+    "transactionHash": "0xf595aa12d54ff3924ff19a381670d7ae78cfa6514ff86387a65c305a529a16bc", // 交易hash
+    "transactionIndex": 25, // todo
+    "blockHash": "0x06e67d2d8b884e9d55d57e511213ef0bfb177350f7fae343327b4ec05b44dacd", // 所在区块的区块hash
+    "blockNumber": 6011811, // 所在区块号
+    "cumulativeGasUsed": 2027655, // 累积gas 使用量（这个区块从最开始的交易到现在这笔交易的所有gas 使用量）
+    "gasUsed": 46085, // 本比交易gas 使用量
+    "contractAddress": null,
+    "root": null,
+    "status": "0x1", // 1 成功；0 失败
+    "from": "0xf3b2e8eb0a56cba18fab91e762a67ecb15198eb9", // 交易 from 地址
+    "to": "0xe980e37de697598e0999d09b563e528be6e67316", // contract 地址
+    "logs": [ // 交易的logs，应该是ERC20的才有（ETH币种没有logs）
+        {
+            "removed": false,
+            "logIndex": 48,
+            "transactionIndex": 25,
+            "transactionHash": "0xf595aa12d54ff3924ff19a381670d7ae78cfa6514ff86387a65c305a529a16bc",
+            "blockHash": "0x06e67d2d8b884e9d55d57e511213ef0bfb177350f7fae343327b4ec05b44dacd",
+            "blockNumber": 6011811,
+            "address": "0xe980e37de697598e0999d09b563e528be6e67316",
+            "data": "0x0000000000000000000000000000000000000000000000000000000000b71b00", // b71b00 转为10进制为12000000，这个是转账的金额12，后面跟上了decimals
+            "type": null,
+            "topics": [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // event Transfer的hash（具体知道hash可根据下面的main方法）
+                "0x000000000000000000000000f3b2e8eb0a56cba18fab91e762a67ecb15198eb9", // from
+                "0x0000000000000000000000005adbc380c52919a7ba37a8565bb225c172987773" // to
+            ],
+            "transactionIndexRaw": "0x19", // 这个是16进制数据，去掉0x，19——>十进制 = 25，和上面 transactionIndex 对应
+            "logIndexRaw": "0x30", // 和上面字段同理，转换为10进制是 48，和logIndex对应
+            "blockNumberRaw": "0x5bbba3" // 和上面字段同理，转换为10进制是 6011811，和 blockNumber 对应
+        }
+    ],
+    "logsBloom": "0x00000040000000000000000000000000000000000000000084000000001800000000000000000000000000000000000000000000000000004000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000004000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000",
+    "revertReason": null,
+    "type": "0x2", // type代表交易类型，具体看下面详解
+    "effectiveGasPrice": "0xfcaa4d6af",
+    "cumulativeGasUsedRaw": "0x1ef087",
+    "transactionIndexRaw": "0x19",
+    "blockNumberRaw": "0x5bbba3",
+    "statusOK": true,
+    "gasUsedRaw": "0xb405"
+}
+
+
+
+
+
+type详解：
+Legacy Transaction (Type 0): 传统的以太坊交易类型。
+EIP-2930 Transaction (Type 1): 包含访问列表的新型交易。
+EIP-1559 Transaction (Type 2): 改进的收费机制，包含基础费用和小费。
+
+
+
+
+
+
+import org.web3j.crypto.Hash;
+
+public class EventTopicHashCalculator {
+    public static void main(String[] args) {
+        // 事件签名
+        String eventSignature = "Transfer(address,address,uint256)"; // 由事件名称和事件的参数类型组成 事件名称：Transfer 参数类型：address, address, uint256，这个可以参考EIP-xx官网来查看事件名称和参数类型都是什么（ERC20就是EIP-20）ERC20的：https://eips.ethereum.org/EIPS/eip-20#events
+
+        // 计算事件签名的 Keccak-256 哈希值
+        String eventHash = Hash.sha3String(eventSignature);
+
+        // 去掉前缀"0x"（如果需要）
+        if (eventHash.startsWith("0x")) {
+            eventHash = eventHash.substring(2);
+        }
+
+        System.out.println("Event signature: " + eventSignature);
+        System.out.println("Event hash: 0x" + eventHash); // 得到的这个值可以用来监控事件
+    }
+}

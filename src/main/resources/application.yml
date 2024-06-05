@@ -86,6 +86,8 @@ mybatis:
   mapper-locations:
     - classpath*:sg/**/mapper/*.xml
 
+blockchain:
+  network: sepolia
 
 
 
