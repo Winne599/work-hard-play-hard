@@ -20,6 +20,7 @@ public class CommonConstant {
      * alchemy sepolia  API key2
      */
     public static String ALCHEMY_SEPOLIA_API_KEY2 = "https://eth-sepolia.g.alchemy.com/v2/iTbiG6scH2X2lPiJ-ikA2ccywrnLzrHx";
+    public static String ALCHEMY_MAINNET_API_KEY = "https://eth-mainnet.g.alchemy.com/v2/NKpBa-CS4J5HVtThu--luWbdIdzozMCY";
 
 
     /**
