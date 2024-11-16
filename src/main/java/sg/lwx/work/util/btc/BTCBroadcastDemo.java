@@ -1,9 +1,12 @@
-package sg.lwx.work.util;
+package sg.lwx.work.util.btc;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public class BTCBroadcastDemo {
 
@@ -32,4 +35,14 @@ public class BTCBroadcastDemo {
 //            throw new BusinessException(ReturnCodeEnum.BROADCAST_ERROR, content);
 //        }
 //    }
+
+    public static void main(String[] args) {
+        //  System.out.println(new BigDecimal(100000).movePointLeft(8));
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime result = now.plusHours(128).plusMinutes(37);
+        System.out.println("now: " + now);
+        System.out.println("result: " + result);
+
+    }
 }

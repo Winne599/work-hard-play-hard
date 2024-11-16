@@ -89,7 +89,8 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.8.1'
 
 
-    implementation group: 'org.bitcoinj', name: 'bitcoinj-core', version: '0.15.10'
+//    implementation group: 'org.bitcoinj', name: 'bitcoinj-core', version: '0.15.10'
+    implementation 'org.bitcoinj:bitcoinj-core:0.16.3'
     implementation 'com.google.guava:guava:28.0-jre'
 
 }
