@@ -4,6 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import sg.lwx.work.config.rabbit.RabbitMQConfig;
@@ -12,8 +15,6 @@ import sg.lwx.work.service.RabbitMQService;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -52,14 +53,15 @@ public class RabbitMQServiceImpl implements RabbitMQService {
     }
 
     /**
-     *  发布消息
+     * 发布消息
+     *
      * @param msg
      * @return
      * @throws Exception
      */
     @Override
     public String sendMsgByFanoutExchange(String msg) throws Exception {
-       JSONObject message = getMessage(msg);
+        JSONObject message = getMessage(msg);
         try {
             rabbitTemplate.convertAndSend(RabbitMQConfig.FANOUT_EXCHANGE_DEMO_NAME, "", message.toString());
             return "ok";
@@ -70,7 +72,7 @@ public class RabbitMQServiceImpl implements RabbitMQService {
     }
 
     @Override
-    public String sendMsgByTopicExchange(String msg, String routingKey)  {
+    public String sendMsgByTopicExchange(String msg, String routingKey) {
         JSONObject message = getMessage(msg);
         try {
             //发送消息
@@ -82,8 +84,27 @@ public class RabbitMQServiceImpl implements RabbitMQService {
         }
     }
 
+    @Override
+    public String sendMsgByHeadersExchange(String msg, JSONObject jsonObject) {
+        try {
+            MessageProperties messageProperties = new MessageProperties();
+            //消息持久化
+            messageProperties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+            messageProperties.setContentType("UTF-8");
+            //添加消息
+            messageProperties.getHeaders().putAll(jsonObject);
+            Message message = new Message(msg.getBytes(), messageProperties);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.HEADERS_EXCHANGE_DEMO_NAME, null, message);
+            return "ok";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
+        }
+    }
+
     /**
      * 组装消息体
+     *
      * @param msg
      * @return
      */
@@ -96,7 +117,5 @@ public class RabbitMQServiceImpl implements RabbitMQService {
         content.put("msg", msg);
         return content;
     }
-
-
 
 }

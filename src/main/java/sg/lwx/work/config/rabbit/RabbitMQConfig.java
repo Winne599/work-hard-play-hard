@@ -5,6 +5,9 @@ package sg.lwx.work.config.rabbit;
  */
 public class RabbitMQConfig {
 
+/**
+ * direct 类型
+ */
     /**
      * RabbitMQ 的队列主题名称
      */
@@ -22,7 +25,7 @@ public class RabbitMQConfig {
 
 
 /**
- * fanout类型
+ * fanout 类型
  */
 
     /**
@@ -39,7 +42,6 @@ public class RabbitMQConfig {
      * RabbitMQ的FANOUT_EXCHANG交换机类型的名称
      */
     public static final String FANOUT_EXCHANGE_DEMO_NAME = "fanout.exchange.demo.name";
-
 
 
 /**
@@ -68,4 +70,24 @@ public class RabbitMQConfig {
      * RabbitMQ的TOPIC_EXCHANGE交换机的队列C的名称
      */
     public static final String TOPIC_EXCHANGE_QUEUE_C = "topic.queue.c";
+
+
+/**
+ * headers 类型
+ */
+
+    /**
+     * HEADERS_EXCHANGE交换机名称
+     */
+    public static final String HEADERS_EXCHANGE_DEMO_NAME = "headers.exchange.demo.name";
+
+    /**
+     * RabbitMQ的HEADERS_EXCHANGE交换机的队列A的名称
+     */
+    public static final String HEADERS_EXCHANGE_QUEUE_A = "headers.queue.a";
+
+    /**
+     * RabbitMQ的HEADERS_EXCHANGE交换机的队列B的名称
+     */
+    public static final String HEADERS_EXCHANGE_QUEUE_B = "headers.queue.b";
 }

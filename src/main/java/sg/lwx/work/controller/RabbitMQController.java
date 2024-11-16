@@ -1,9 +1,7 @@
 package sg.lwx.work.controller;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.web.bind.annotation.*;
 import sg.lwx.work.service.RabbitMQService;
 
 import javax.annotation.Resource;
@@ -13,12 +11,14 @@ import javax.annotation.Resource;
 public class RabbitMQController {
     @Resource
     private RabbitMQService rabbitMQService;
+
     /**
      * 发送消息 Direct exchange 类型
+     *
      * @author java技术爱好者
      */
     @PostMapping("/sendMsg")
-    public String sendMsg(@RequestParam(name = "msg") String msg)  {
+    public String sendMsg(@RequestParam(name = "msg") String msg) {
         return rabbitMQService.sendMsg(msg);
     }
 
@@ -41,5 +41,20 @@ public class RabbitMQController {
     @PostMapping("/topicSend")
     public String topicSend(@RequestParam(name = "msg") String msg, @RequestParam(name = "routingKey") String routingKey) throws Exception {
         return rabbitMQService.sendMsgByTopicExchange(msg, routingKey);
+    }
+
+    /**
+     * headers exchange 发送消息
+     *
+     * @param msg
+     * @param json
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/headersSend")
+    @SuppressWarnings("unchecked")
+    public String headersSend(@RequestParam(name = "msg") String msg,
+                              @RequestBody JSONObject json) {
+        return rabbitMQService.sendMsgByHeadersExchange(msg, json);
     }
 }
