@@ -92,6 +92,9 @@ dependencies {
     implementation group: 'org.bitcoinj', name: 'bitcoinj-core', version: '0.15.10'
     implementation 'com.google.guava:guava:28.0-jre'
 
+    // rabbitMQ
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+
 }
 
 

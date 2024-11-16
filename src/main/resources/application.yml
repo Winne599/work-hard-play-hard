@@ -43,7 +43,11 @@ spring:
         namespace: 47dea8bf-3dce-4c86-82bc-82f1497c57d2
   autoconfigure:
     exclude: org.springframework.cloud.client.serviceregistry.AutoServiceRegistrationAutoConfiguration,org.springframework.cloud.client.serviceregistry.ServiceRegistryAutoConfiguration
-
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
 
 #开放所有页面节点  默认只开启了health、info两个节点
 management:
