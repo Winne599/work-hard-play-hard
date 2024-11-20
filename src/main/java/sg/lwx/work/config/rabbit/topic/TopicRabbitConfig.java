@@ -65,7 +65,7 @@ public class TopicRabbitConfig implements BeanPostProcessor {
         //队列A绑定到FanoutExchange交换机
         return BindingBuilder.bind(topicExchangeQueueA())
                 .to(rabbitmqDemoTopicExchange())
-                .with("a.*");
+                .with("a");
     }
 
     /**

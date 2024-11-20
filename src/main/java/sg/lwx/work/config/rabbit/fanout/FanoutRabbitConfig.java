@@ -34,6 +34,13 @@ public class FanoutRabbitConfig implements BeanPostProcessor {
     }
 
     @Bean
+    public FanoutExchange rabbitmqDemoFanoutExchange() {
+        //创建FanoutExchange类型交换机
+        return new FanoutExchange(RabbitMQConfig.FANOUT_EXCHANGE_DEMO_NAME, true, false);
+    }
+
+
+    @Bean
     public Queue fanoutExchangeQueueA() {
         //队列A
         return new Queue(RabbitMQConfig.FANOUT_EXCHANGE_QUEUE_TOPIC_A, true, false, false);
@@ -43,12 +50,6 @@ public class FanoutRabbitConfig implements BeanPostProcessor {
     public Queue fanoutExchangeQueueB() {
         //队列B
         return new Queue(RabbitMQConfig.FANOUT_EXCHANGE_QUEUE_TOPIC_B, true, false, false);
-    }
-
-    @Bean
-    public FanoutExchange rabbitmqDemoFanoutExchange() {
-        //创建FanoutExchange类型交换机
-        return new FanoutExchange(RabbitMQConfig.FANOUT_EXCHANGE_DEMO_NAME, true, false);
     }
 
     @Bean
