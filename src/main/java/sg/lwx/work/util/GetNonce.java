@@ -2,6 +2,7 @@ package sg.lwx.work.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import sg.lwx.work.constant.CommonConstant;
 
 import java.util.HashMap;
 import java.util.Map;

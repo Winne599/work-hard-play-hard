@@ -1,4 +1,4 @@
-package sg.lwx.work.util;
+package sg.lwx.work.constant;
 
 import java.util.Locale;
 

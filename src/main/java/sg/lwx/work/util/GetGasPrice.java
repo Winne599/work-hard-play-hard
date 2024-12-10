@@ -1,10 +1,10 @@
 package sg.lwx.work.util;
 
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.Web3jService;
 import org.web3j.protocol.core.methods.response.EthGasPrice;
 import org.web3j.protocol.core.methods.response.EthMaxPriorityFeePerGas;
 import org.web3j.protocol.http.HttpService;
+import sg.lwx.work.constant.CommonConstant;
 
 import java.math.BigInteger;
 import java.util.concurrent.ExecutionException;
