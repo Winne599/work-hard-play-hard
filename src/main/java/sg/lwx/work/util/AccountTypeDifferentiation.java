@@ -14,7 +14,7 @@ public class AccountTypeDifferentiation {
 
         //  Web3j web3j = Web3j.build(new HttpService("https://goerli.infura.io/v3/1921523b28104a489f7337c3d1f68822"));
 
-        Web3j web3j = Web3j.build(new HttpService("https://eth-goerli.g.alchemy.com/v2/WQdUQg73So5Lx0uoFdEfX_I2AyU2XZFm"));
+        Web3j web3j = Web3j.build(new HttpService("https://eth-sepolia.g.alchemy.com/v2/60lgTZwoGyr12FPegLDQqHQSsVIW6CPj"));
 
         try {
             // get contract
