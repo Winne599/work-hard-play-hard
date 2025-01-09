@@ -11,7 +11,9 @@ public class CommonConstant {
     /**
      * alchemy goerli  API key
      */
-    public static String ALCHEMY_API_KEY = "https://eth-goerli.g.alchemy.com/v2/WQdUQg73So5Lx0uoFdEfX_I2AyU2XZFm";
+ // public static String ALCHEMY_API_KEY = "https://eth-goerli.g.alchemy.com/v2/WQdUQg73So5Lx0uoFdEfX_I2AyU2XZFm";
+   public static String ALCHEMY_API_KEY = "https://eth-sepolia.g.alchemy.com/v2/qcYhgTNHiW29ht75_KngtkR5wC6BYKp4";
+
     /**
      * alchemy sepolia API key
      */
