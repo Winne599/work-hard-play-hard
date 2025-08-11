@@ -56,8 +56,8 @@ public class ECDSAVerification17 {
         // 示例公钥、原文和签名（使用Base64编码）
         // camp2024 dev环境 WD2025010811190001
         String publicKeyStr = "3056301006072a8648ce3d020106052b8104000a03420004b782ef0fd73d6e5f6d3849a3621e9f90e4edf9840c046b706e49d470d2887a849c53b9f36eccbddb059b36ea48a935d7f9f3599febbe60017c6da9060fee8c48";
-        String originalMessage = "{\"entityType\":\"METACOMP\",\"orderNo\":\"WD2025010811190001\",\"payeeAcctNm\":\"camp2024-fip-14\",\"payeeAcctNo\":\"11021210366\",\"payeeCurrencyTypeCd\":\"USD\",\"payerAcctNm\":\"MetaComp Pte. Ltd.\",\"payerAcctNo\":\"11021214213\",\"tradeAmount\":\"150\"}";
-        String signatureStr = "304402200a82dd0eabcb9789a874fc718f2cb00013680c2527ad43a2d5cc19496fbfa6cc02207d86972e984c06f1263bcd69dcd4257d3ae15bac26f14e1b5675679eeb62496a";
+        String originalMessage = "{\"costFeeAssumeCd\":\"SHA\",\"entityType\":\"METACOMP\",\"orderNo\":\"WD2025042816460001\",\"payeeAcctNo\":\"22213122\",\"payeeAddr\":\"[\\\"CITIKZKAXXX1\\\",\\\"CITIKZKAXXX2\\\",\\\"CITIKZKAXXX3\\\"]\",\"payeeBankNm\":\"HSBCHKH0XXX\",\"payeeBankNo\":\"HSBCHKH0XXX\",\"payeeCountriesEnCd\":\"PR\",\"payeeCountriesNm\":\"Puerto Rico\",\"payeeNm\":\"CITIKZKAXXX\",\"payerAcctNm\":\"MetaComp PTE. LTD.\",\"payerAcctNo\":\"11021214213\",\"paymentAttributeCd\":\"OTHR\",\"tradeAmount\":\"50\",\"tradeCurrencyTypeCd\":\"EUR\"}";
+        String signatureStr = "304402206565458e5ed2403e9f27d696ade2a3c6f534da0b9d99da0049b83352404f1e680220690609bb2e0d3edca559137d67c6fc40f09631990ec6d48eb2ad15c5e2910fa0";
 
         // 调用验证方法
         boolean isVerified = verifyECDSASignature(publicKeyStr, originalMessage, signatureStr);

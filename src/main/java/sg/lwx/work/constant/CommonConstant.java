@@ -1,6 +1,6 @@
 package sg.lwx.work.constant;
 
-import java.util.Locale;
+import java.util.UUID;
 
 /**
  * create by lianwenxiu on 2023/12/3
@@ -39,6 +39,9 @@ public class CommonConstant {
      */
     public static String INFURA_SEPOLIA_API_KEY2 = "https://sepolia.infura.io/v3/cf905e81b2ac42cc9cc61fc50c4cfcc6";
 
+    public static String INFURA_SEPOLIA_API_KEY3 = "https://sepolia.infura.io/v3/2c162fb3182f4ae099b7380a715f1aff";
+
+
 
 
 
@@ -46,9 +49,10 @@ public class CommonConstant {
 
     public static void main(String[] args) {
 
-        System.err.println("ALCHEMY_Sepolia_API_KEY".toUpperCase(Locale.ROOT));
-        System.err.println("INFURA_Sepolia_API_KEY".toUpperCase(Locale.ROOT));
-
+//        System.err.println("ALCHEMY_Sepolia_API_KEY".toUpperCase(Locale.ROOT));
+//        System.err.println("INFURA_Sepolia_API_KEY".toUpperCase(Locale.ROOT));
+        String transactionHash = UUID.randomUUID().toString();
+        System.err.println(transactionHash);
 
     }
 
