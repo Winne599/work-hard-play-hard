@@ -1,0 +1,2 @@
+本分支名字：java_call_contract
+见名知意，本分支用来写 java 调用 合约代码的一些用例
